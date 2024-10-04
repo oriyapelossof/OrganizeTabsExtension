@@ -4,19 +4,19 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "organize") {
-    organizeTabsByWebsite();
-    sendResponse({ status: "Tabs organized by website" });
+    organizeTabsByFavicon();
+    sendResponse({ status: "Tabs organized by favicon" });
   }
 });
 
-// Organizes tabs by website (which means by same domain name)
-function organizeTabsByWebsite() {
+// Organizes tabs by their favicon URL
+function organizeTabsByFavicon() {
   chrome.tabs.query({}, (tabs) => {
-    // Sort tabs by their domain
+    // Sort tabs by their favicon URL
     const sortedTabs = tabs.sort((a, b) => {
-      const domainA = extractDomain(a.url);
-      const domainB = extractDomain(b.url); 
-      return domainA.localeCompare(domainB);
+      const faviconA = a.favIconUrl || "";  // Use an empty string if no favicon is available
+      const faviconB = b.favIconUrl || "";  // empty string for undefined favicons
+      return faviconA.localeCompare(faviconB);
     });
 
     // Moves each tab to its new position
@@ -24,10 +24,4 @@ function organizeTabsByWebsite() {
       chrome.tabs.move(tab.id, { index: index });
     });
   });
-}
-
-// Function to extract domain from a URL
-function extractDomain(url) {
-  const hostname = new URL(url).hostname;
-  return hostname.replace('www.', ''); // Removes 'www.' for the sorting
 }
